@@ -15,12 +15,34 @@ var app = new Vue({
 		likes: 0,
 		commentText: '',
 		boosterpacks: [],
+		listRecordHistoryWallet: []
 	},
 	computed: {
 		test: function () {
 			var data = [];
 			return data;
-		}
+		},
+		allMoney: function(){
+			return this.allAddMoney - this.allRemoveMoney;
+		},
+		allRemoveMoney: function(){
+			let sum = 0;
+			for (const Key in this.listRecordHistoryWallet) {
+				if(this.listRecordHistoryWallet[Key]['action'] == 'write-off')
+					sum += parseFloat(this.listRecordHistoryWallet[Key]['amount']);
+			}
+
+			return sum;
+		},
+		allAddMoney: function(){
+			let sum = 0;
+			for (const Key in this.listRecordHistoryWallet) {
+				if(this.listRecordHistoryWallet[Key]['action'] == 'enrollment')
+					sum += parseFloat(this.listRecordHistoryWallet[Key]['amount']);
+			}
+
+			return sum;
+		},
 	},
 	created(){
 		var self = this
@@ -37,8 +59,18 @@ var app = new Vue({
 			})
 	},
 	methods: {
+		historyWallet: function (){
+			var self= this;
+			axios
+				.get('/main_page/get_history_wallet')
+				.then(function (response) {
+					self.listRecordHistoryWallet = response.data.records;
+				})
+		},
 		logout: function () {
-			console.log ('logout');
+			axios.post('/main_page/logout').then(function (response) {
+				location.href= '/';
+			})
 		},
 		logIn: function () {
 			var self= this;
@@ -80,7 +112,7 @@ var app = new Vue({
 					'/main_page/comment',
 					comment
 				).then(function () {
-
+					self.openPost(id);
 				});
 			}
 

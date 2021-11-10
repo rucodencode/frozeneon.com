@@ -40,7 +40,9 @@ defined('BASEPATH') or exit('No direct script access allowed');
 |
 */
 $autoload['packages'] = [];
-
+//ХЗ, КАК ПОДКЛЮЧИТЬ ПРАВИЛЬНО
+include_once __DIR__.'/../classes/transaction_info.php';
+include_once __DIR__.'/../classes/transaction_type.php';
 /*
 | -------------------------------------------------------------------
 |  Auto-load Libraries

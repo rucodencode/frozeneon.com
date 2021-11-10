@@ -27,7 +27,7 @@ use Model\User_model;
       <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
         <li class="nav-item">
             <? if (User_model::is_logged()) {?>
-              <a href="/main_page/logout" class="btn btn-primary my-2 my-sm-0"
+              <a href="/main_page/logout" class="btn btn-primary my-2 my-sm-0" @click.prevent="logout"
                  data-target="#loginModal">Log out, <?= $user->personaname?>
               </a>
             <? } else {?>
@@ -43,6 +43,15 @@ use Model\User_model;
               </button>
             <? }?>
         </li>
+
+		  <li class="nav-item">
+			  <?  if (User_model::is_logged()) {?>
+				  <button type="button" class="btn btn-info my-2 my-sm-0" type="submit" data-toggle="modal"
+						  data-target="#historyWalletModal" @click="historyWallet">History wallet
+				  </button>
+			  <? }?>
+		  </li>
+
         <li class="nav-item">
             <?  if (User_model::is_logged()) {?>
                 <a href="" role="button">
@@ -262,7 +271,54 @@ use Model\User_model;
       </div>
     </div>
   </div>
+
+	<!-- Modal -->
+	<div class="modal fade" id="historyWalletModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+		 aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalLabel">History wallet</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+
+					<p>Текущий баланс: {{allMoney}}$</p>
+					<p>Общая потраченная сумма: <span style="color: red">-{{allRemoveMoney}}$</span></p>
+					<p>Общая пополненная сумма: <span style="color: green">+{{allAddMoney}}$</span></p>
+					<table class="table">
+						<thead>
+						<tr>
+							<th scope="col">#Транзакция</th>
+							<th scope="col">#Дата</th>
+							<th scope="col">Сумма</th>
+						</tr>
+						</thead>
+						<tbody>
+							<tr v-for="record in listRecordHistoryWallet">
+								<th scope="row">{{record['id']}}</th>
+								<td>{{record['time_created']}}</td>
+								<td>
+									<span style="color: red;" v-if="record['action'] == 'write-off'">{{'-' + record['amount']}}$</span>
+									<span style="color: green;" v-else>{{'+' + record['amount']}}$</span>
+								</td>
+							</tr>
+
+						</tbody>
+					</table>
+
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-success" data-dismiss="modal">Ok</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
 </div>
+
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
         integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
