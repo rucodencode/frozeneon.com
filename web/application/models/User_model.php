@@ -6,6 +6,7 @@ use Exception;
 use http\Client\Curl\User;
 use stdClass;
 use System\Emerald\Emerald_model;
+use Codencode\Transaction_type;
 
 /**
  * Created by PhpStorm.
@@ -265,9 +266,35 @@ class User_model extends Emerald_model {
      * @return bool
      * @throws \ShadowIgniterException
      */
-    public function add_money(float $sum): bool
+    public function add_money(float $sum, array $initiator): bool
     {
-        // TODO: task 4, добавление денег
+        // TODO: task 4, добавление денег+++
+
+		App::get_s()->from(self::get_table())
+			->where(['id' => $this->get_id()])
+			->update([
+					sprintf('wallet_balance = wallet_balance + %s', App::get_s()->quote($sum)),
+					sprintf('wallet_total_refilled = wallet_total_refilled + %s', App::get_s()->quote($sum))
+				])
+			->execute();
+
+
+
+		if ( ! App::get_s()->is_affected())
+		{
+			return FALSE;
+		}
+
+		if(!empty($initiator['object'])){
+			\Model\Analytics_model::create([
+				'user_id' => $this->get_id(),
+				'action' => Transaction_type::ACTION_ENROLLMENT,
+				'object' => $initiator['object'],
+				'object_id' => $initiator['object_id'] ?: NULL,
+				'amount' => $sum
+			]);
+		}
+
 
         return TRUE;
     }
@@ -279,9 +306,34 @@ class User_model extends Emerald_model {
      * @return bool
      * @throws \ShadowIgniterException
      */
-    public function remove_money(float $sum): bool
+    public function remove_money(float $sum, $initiator): bool
     {
-        // TODO: task 5, списание денег
+        // TODO: task 5, списание денег+++
+
+		App::get_s()->from(self::get_table())
+			->where(['id' => $this->get_id()])
+			->where(['wallet_balance >=' => $sum])
+			->update([
+					sprintf('wallet_balance = wallet_balance - %s', App::get_s()->quote($sum)),
+					sprintf('wallet_total_withdrawn = wallet_total_withdrawn + %s', App::get_s()->quote($sum))
+			])
+			->execute();
+
+		if ( ! App::get_s()->is_affected())
+		{
+			return FALSE;
+		}
+
+		if(!empty($initiator['object'])){
+			\Model\Analytics_model::create([
+				'user_id' => $this->get_id(),
+				'action' => Transaction_type::ACTION_WRITE_OFF,
+				'object' => $initiator['object'],
+				'object_id' => $initiator['object_id'] ?: NULL,
+				'amount' => $sum
+			]);
+		}
+
 
         return TRUE;
     }
@@ -301,6 +353,7 @@ class User_model extends Emerald_model {
         {
             return FALSE;
         }
+
 
         return TRUE;
     }
@@ -346,7 +399,13 @@ class User_model extends Emerald_model {
      */
     public static function find_user_by_email(string $email): User_model
     {
-        // TODO: task 1, аутентификация
+        // TODO: task 1, аутентификация+++
+
+		$user = App::get_s()->from(self::CLASS_TABLE)->where(['email' => $email])->one();
+		if(!empty($user))
+			return new self($user['id']);
+
+		return new self();
     }
 
     /**

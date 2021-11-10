@@ -4,6 +4,7 @@ namespace Model;
 use App;
 use Exception;
 use System\Emerald\Emerald_model;
+use Model\Boosterpack_info_model;
 use stdClass;
 use ShadowIgniterException;
 
@@ -134,7 +135,8 @@ class Boosterpack_model extends Emerald_model
      */
     public function get_boosterpack_info(): array
     {
-        // TODO
+        // TODO+++
+		return Boosterpack_info_model::get_by_boosterpack_id($this->get_id());
     }
 
     function __construct($id = NULL)
@@ -173,7 +175,19 @@ class Boosterpack_model extends Emerald_model
      */
     public function open(): int
     {
-        // TODO: task 5, покупка и открытие бустерпака
+        // TODO: task 5, покупка и открытие бустерпака+++
+
+		$max_available_likes = $this->bank + ($this->price - $this->us);
+		$contains = $this->get_contains($max_available_likes);
+		$randKey = array_rand($contains, 1);
+
+		$contain = $contains[$randKey];
+		$amount = $contain->get_price();
+
+		$bank = $this->bank + $this->price - $this->us - $amount;
+		$this->set_bank($bank);
+
+		return $amount;
     }
 
     /**
@@ -183,7 +197,17 @@ class Boosterpack_model extends Emerald_model
      */
     public function get_contains(int $max_available_likes): array
     {
-        // TODO: task 5, покупка и открытие бустерпака
+        // TODO: task 5, покупка и открытие бустерпака+++
+
+		$contains = [];
+		$list = Boosterpack_info_model::get_by_boosterpack_id($this->get_id());
+
+		if(!empty($list)){
+			$filterFunction = function ($element) use($max_available_likes){ return $element->get_item()->get_price() <= $max_available_likes;};
+			$contains = array_map(function($value){ return $value->get_item();}, array_filter($list, $filterFunction));
+		}
+
+		return $contains;
     }
 
 
@@ -229,6 +253,16 @@ class Boosterpack_model extends Emerald_model
      */
     private static function _preparation_contains(Boosterpack_model $data): stdClass
     {
-        // TODO: task 5, покупка и открытие бустерпака
+        // TODO: task 5, покупка и открытие бустерпака+++
+
+		$o = new stdClass();
+
+		$o->id = $data->get_id();
+		$o->price = $data->get_price();
+
+		$o->contains = self::get_by_boosterpack_id($data->get_id());
+
+
+		return $o;
     }
 }

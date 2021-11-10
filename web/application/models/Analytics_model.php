@@ -2,6 +2,7 @@
 namespace Model;
 use App;
 use System\Emerald\Emerald_model;
+use stdClass;
 
 class Analytics_model extends Emerald_Model
 {
@@ -180,7 +181,6 @@ class Analytics_model extends Emerald_Model
 
     public function get_analytics_for_user(int $user_id): array
     {
-        return static::transform_many(App::get_s()->from(self::CLASS_TABLE)->where(['user_id' => $user_id])->orderBy('time_created', 'ASC')->many());
+        return App::get_s()->from(self::CLASS_TABLE)->where(['user_id' => $user_id])->orderBy('time_created', 'ASC')->many();
     }
-
 }
